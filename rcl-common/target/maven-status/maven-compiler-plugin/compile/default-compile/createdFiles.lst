@@ -1,0 +1,6 @@
+com/kw/rcl/common/simpleext/SimpleExtensionBeanManager.class
+com/kw/rcl/common/simpleext/sample/AddOperatorExtension.class
+com/kw/rcl/common/simpleext/SimpleExtensionBean.class
+com/kw/rcl/common/simpleext/InvalidSimpleExtensionBeanException.class
+com/kw/rcl/common/simpleext/sample/OperatorExtensionPoint.class
+com/kw/rcl/common/simpleext/sample/SubOperatorExtension.class
