@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
     <modules>
-        <module>rcl-common</module>
         <module>rcl-start</module>
+        <module>rcl-common</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -28,6 +28,11 @@
             <dependency>
                 <groupId>com.kinwey</groupId>
                 <artifactId>rcl-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.kinwey</groupId>
+                <artifactId>rcl-start</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

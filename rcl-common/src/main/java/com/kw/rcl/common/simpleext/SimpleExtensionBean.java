@@ -27,8 +27,9 @@ public interface SimpleExtensionBean extends InitializingBean {
                 return clazz;
             }
         }
-        //never happen
-        throw new RuntimeException(String.format("class:%s is not a SimpleExtensionBean", this.getClass().getName()));
+
+        throw new InvalidSimpleExtensionBeanException(
+            String.format("class:%s is not a SimpleExtensionBean", this.getClass().getName()));
     }
 
     /**
@@ -38,7 +39,7 @@ public interface SimpleExtensionBean extends InitializingBean {
     List<String> applicationScenes();
 
     @Override
-    default void afterPropertiesSet() throws Exception {
-
+    default void afterPropertiesSet(){
+        SimpleExtensionBeanManager.register(this);
     }
 }
