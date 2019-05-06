@@ -1,0 +1,31 @@
+### Lambda取代匿名类和特定常量的小函数：
+- 单个抽象方法的接口作为一类特殊接口，现在被称为函数接口(function interface),java8利用lambda表达式来创建这类接口的实例。比匿名类要更加简洁。
+- lambda取代枚举中的特定常量的方法来减少样板代码；不过lambda没有名称和文档；如果一个计算本身不是自描述的，或者超出了几行(最多三行)，那就不要把它放在一个lambda中，考虑一个新方法并使用方法引用来代替lambda。
+
+### 方法引用优先于lambda
+- 方法引用比lambda更简洁，省去了方法所带的参数样板代码。只要方法引用更加简洁、清晰，就用方法引用；如果lambda更加简洁(同一个类中的方法调用)，就坚持使用lambda.
+
+### 坚持使用标准的函数接口
+- 只要标准的函数接口能够满足需求，就不应该自己新建一个函数接口，减少沟通和理解成本。内置六大类基础接
+口，各有int、long、double的三种变体：
+
+接口 | 函数签名 | 范例 | 说明
+---- | --- | --- | ---
+UnaryOperator<T> | T apply(T t) |String::toLowerCase|返回值与单个参数类型一致的函数
+BinaryOperator<T> | T apply(T t1,T t2) |BigInteger::add|返回值与二个参数类型一致的函数
+Predicate<T> | boolean test(T t) |Collection::isEmpty|有一个参数返回值为boolean的函数
+Function<T,R> | R apply(T t) |Arrays::asList|参数与返回值类型不一致的函数
+Supplier<T> | T get() |Instant::now|无参数并返回一个值的函数
+Consumer<T> | void accept(T t) |System.out::println|有一个参数无返回值的函数
+
+- 千万不要用带包装类型的基础函数接口来替代基本函数接口，批量操作时会有性能问题。
+- 新建函数接口的原则：参考Comparator<T>
+  - 通用，并且将收益于新增的函数名称的表达力
+  - 具有与其关联的严格的契约
+  - 将受益于定制的缺省方法
+  
+- 时刻谨记使用lambda来设计API，输入时接受函数接口类型，并在输出时返回之。
+
+
+
+

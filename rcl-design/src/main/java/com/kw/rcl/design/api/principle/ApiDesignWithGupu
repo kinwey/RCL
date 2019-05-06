@@ -1,0 +1,4 @@
+## API设计原则——谷朴
+### 1. Good mental model
+### 2. Keep it simple,but not simpler
+### 3. allows multiple implementations：松耦合，Interface vs implements;Dependency injection

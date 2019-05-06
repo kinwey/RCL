@@ -6,6 +6,7 @@
     <modules>
         <module>rcl-start</module>
         <module>rcl-common</module>
+        <module>rcl-design</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

@@ -1,0 +1,454 @@
+## [JAVA API DESIGN CHECKLIST](https://theamiableapi.com/2012/01/16/java-api-design-checklist/)
+## 原则：站在使用者的角度而非实现者的角度设计API。一个精心设计的API结合了两个世界的精华，既是坚实而精确的基石，又具有高度的实施灵活性。
+## 1、 Package Design Checklist
+### 1.1、General
+#### 1.1.1、 Favor：将API和实现放在不同的包中
+-  Rationale:java仅支持public和包访问权限，不应该把api和实现放在一个包下，DI依赖倒置原则只需要知道API，不需要具体实现。
+
+- Do this：
+```java
+package com.company.product;
+public class ApiClass {
+   private ImplementationClass m;
+}
+package com.company.product.internal;
+public class ImplementationClass {...}
+```
+- Don't do this:
+```java
+package com.company.product;
+
+public class ApiClass {
+
+   private ImplementationClass m;
+}
+
+class ImplementationClass {...} //package scoped
+```
+
+#### 1.1.2、Favor: placing APIs into high-level packages and implementation into lower-level packages
+- Rationale:包路径越短的类应该越常用，路径越深的类应该更个性化和少被使用。api应该是一个组件唯一的public部分，放在上层目录方便使用者查阅
+- Do this：
+```java
+package com.company.product.service;
+
+public class ApiClass {...}
+
+package com.company.product.service.internal;
+
+public class ImplementationClass {...}
+```
+- Don't do this：
+```java
+package com.company.product.service.this.that.other.api;
+
+public class ApiClass {...}
+
+package com.company.product.service.this.that;
+
+public class ImplementationClass {...}
+```
+
+#### <a name='1.1.3'> 1.1.3、Consider: breaking up large APIs into several packages</a>
+- Rationale:一个包下放太多类很难理解，如果一些类不常用或者只在特定场景使用，应该移到特定的包下，用户会更容易查找和使用你的API
+- Exceptions:If you have strong dependencies between classes, you should leave them in the same package.
+
+#### 1.1.4、Consider:putting API and implementation packages into separate Java archives
+- Rationale:用来区分build和run时的依赖，build时只依赖api client,运行时才需要具体实现，可以防止用户编码时直接依赖了具体实现。
+
+#### 1.1.5、Avoid:(minimize) internal dependencies on implementation classes in APIs
+- Rationale:强依赖具体实现命名的API很难去修改和扩展其他实现，an API should be a separate layer on top of its implementation, not simply the public part of the implementation.api应该和具体实现解耦。
+
+#### 1.1.6、Avoid:unnecessary API fragmentation
+- Rationale:依赖不同包下的api比较复杂和难理解，不应该因为实现需要而把api打散到不同的包下。
+- Do this:
+```java
+package com.company.product.service;
+
+public class MyClass {...}
+public class MyException extends Exception {...}
+```
+- Don't do this：
+```java
+package com.company.product.service.core;
+
+public class MyClass {...}
+
+package com.company.product.service.common.exceptions.
+
+public class MyException extends Exception {...}
+```
+- Exceptions:Large APIs should be breaken up into smaller packages based on usage patterns. <a href='#1.1.3'>see 1.1.3</a>
+
+#### 1.1.7、Do not:place public implementation classes in the API package
+- Rationale:增加复杂度影响用户选择，用户有可能直接调用具体实现
+
+
+#### 1.1.8、Do not:create dependencies between callers and implementation classes
+- Rationale:具体实现对使用方应该不可见
+- Don't do this:
+```java
+public com.company.product.service;
+
+public class ApiClass {
+
+//IMPLEMENTATION ONLY!! DO NOT USE!!
+public ApiClass(ImplementationClass impl) {...}
+public void doSomething() throws ImplementationException {...}
+}
+
+public com.company.product.service.internal;
+
+public class ImplementationClass {...}
+public class ImplementationException extends Exception {...}
+```
+
+#### 1.1.9、Do not:place unrelated APIs into the same package
+
+#### 1.1.10、Do not:place API and SPI into the same package
+- Rationale:api和spi有不同作用，使用和演变方式也不一样，api是被用来使用的，spi是制定标准让别人实现的
+
+#### 1.1.11、Do not:move or rename the package of an already released public API
+- Rationale:一经公布的API不能改变，可考虑增加新的api
+
+
+### 1.2、Naming
+#### 1.2.1、Start package names with the company’s official root namespace
+#### 1.2.2、Use a stable product or product family name at the second level of the package name
+
+#### 1.2.3、Use the name of the API as the final part of the package name
+- Do this：
+```java
+package com.company.product; //OK. API name same as product name
+public class ApiClass {};
+
+package com.company.product.apiname; //OK
+public class ApiClass {};
+
+package com.company.product.apiname.apipart; //OK. API name still clear
+public class ApiClass {};
+```
+- Don't do this:
+```java
+package com.company; //No API name!
+public class ApiClass {};
+
+package com.company.apipart; //No API name!
+public class ApiClass {};
+
+package com.company.product.apiname.detail1.detail2; //Difficult to find and import classes!
+public class ApiClass {};
+```
+#### 1.2.4、Consider: marking implementation-only packages by including “internal” in the package name
+
+#### 1.2.5、Avoid: composite names
+- Rationale:包只能使用小写字母，组合单词难以理解
+- Do this：
+```java
+com.company.process.designer
+
+com.company.bpm.designer
+```
+- Don't do this:
+```java
+com.company.businessprocessmanagement.processdesigner
+
+com.company.business_process_management.process_designer
+```
+
+#### 1.2.6、Avoid: using the same name for both package and class inside the package
+- Do this：
+```java
+package com.company.product.scheduler; //OK. Scheduler is a package
+public class TaskList {};
+
+package com.company.product.timing; 
+public class Scheduler {}; //OK. Scheduler is a class
+```
+- Don't do this:
+```java
+package com.company.product.scheduler; 
+public class Scheduler {};  // What is a scheduler?
+```
+
+#### 1.2.7、Avoid: using “api” in package names
+- Do this：
+```java
+//consistent avoidance of the word "api"
+import java.sql.*
+import javax.naming.*
+import javax.jms.*
+import com.ibm.websphere.sca.*
+```
+- Don't do this:
+```java
+//consistent, but redundant use of the word "api"
+import java.sql.api.*
+import javax.naming.api.*
+import javax.jms.api.*
+import com.ibm.websphere.sca.api.*
+
+//inconsistent use of the word "api"
+import java.sql.*
+import javax.naming.*
+import javax.jms.*
+import com.ibm.websphere.sca.api.*
+```
+
+#### 1.2.8、Do not： use marketing, project, organizational unit or geographic location names
+- Rationale:do not use names which can change or may loose their meaning
+- Don't do this:
+```java
+package com.company.borg;        //Internal R&D project name
+package com.company.chicago;     //Team location
+package com.company.livelink;    //Brand name (Marketing)
+```
+
+#### 1.2.9、Do not：use uppercase characters in package names
+
+### 1.3、Documentation
+#### 1.3.1、Provide a package overview (package.html) for each package
+#### 1.3.2、Follow standard Javadoc conventions
+#### 1.3.3、Begin with a short, one sentence summary of the API
+- Rationale:Focus on the purpose and intended use of the package
+#### 1.3.4、 Provide enough details to help deciding if and how to use the API
+- Do this：
+```java
+package com.company.video.converter;
+/**
+ * Provides utilities for converting MPEG-1 or MPEG-2 Video, in NTSC or PAL format,
+ * into Internet media formats. The following output formats are supported:
+ *
+ *   - Flash Video (F4V)
+ *   - QuickTime multimedia file format (MOV and QT)
+ *   - Windows Media Video (WMV)
+ *
+ *  You can merge several video clips into one and clip multiple segments from a single video.
+ *  You can clip, rotate, and flip.
+ *  You can adjust brightness, contrast and saturation.
+ *  You can add subtitles.
+ *
+ *  The MPEG input module produces a proprietary intermediate video format (VideoStream)
+ *  and you pipe various modules together using VideoStream to produce the desired output.
+**/
+```
+#### 1.3.5、Indicate the entry points (main classes or methods) of the API
+
+#### 1.3.6、Include sample code for the main, most fundamental use case
+
+#### 1.3.7、Include a link to the Developer Guide
+
+#### 1.3.8、Include a link to the Cookbook
+
+#### 1.3.9、Indicate related APIs
+
+#### 1.3.10、Include the API version number
+
+#### 1.3.11、Indicate deprecated API versions with the @deprecated tag
+
+#### 1.3.12、 Consider including a copyright notice
+
+#### 1.3.13、 Do not include implementation packages into published Javadoc
+
+## 2、Type Design Checklist
+### 2.1、General
+#### 2.1.1、Ensure each type has a single, well-defined purpose
+#### 2.1.2、Ensure types represent domain concepts, not design abstractions
+#### 2.1.3、Limit the number of types
+- Do this:
+```java
+package com.company.product.api;
+//This class requires complex configuration and initialization
+public class ApiClass { 
+
+    //Default constructor
+    public ApiClass() {}
+
+    //Setters and getters
+    public void setOption1(Object option1) {}
+    public void setOption2(Object option2) {}
+
+    //Initialize after correctly configured
+    public void initialize() throws Exception {}
+}
+```
+- Don't do this:
+```java
+package com.company.product.api;
+//This class requires complex configuration and initialization
+public class ApiClass {}
+public class ApiClassBuilder {}
+public class ApiClassBuilderFactory {}
+
+
+package com.company.product.api;
+public class ValueHolder {
+    public Object getValue() {}
+    public void setValue(Object value) {}
+}
+public class ApiClass {
+    /**
+        Does stuff.
+        @param result Contains the result of the operation
+        @return True if success, False otherwise
+    */
+    public boolean doStuff(ValueHolder result) {}
+}
+
+package com.company.product.api;
+public class Id {
+     public Id(String id) {}
+}
+public class ApiClass {
+    public Object lookupById(Id id) {}
+}
+```
+
+#### 2.1.4、Follow consistent design patterns when designing related types
+#### 2.1.5、 Favor multiple (private) implementations over multiple public types
+#### 2.1.6、 Favor interfaces over class inheritance for expressing simple commonality in behavior
+
+#### 2.1.7、 Favor enumeration types over constants
+#### 2.1.8、 Consider generic types
+#### 2.1.9、Consider placing constraints on the generic type parameter
+ 
+#### 2.1.10、Consider using interfaces to achieve similar effect to multiple inheritance
+#### 2.1.11、Do not declare public or protected fields
+
+
+### 2.2、Naming
+#### 2.2.1、 命名用名词
+#### 2.2.2、 驼峰和首字母大写
+#### 2.2.3、 按照目的来精确命名
+#### 2.2.4、 使用约定俗成的短语简写
+#### 2.2.5、 异常用Exception结尾
+#### 2.2.6、 Consider longer names
+- Do this:
+```java
+package com.company.product.api;
+/**
+ * Cluster event raised in a
+ * split-brain situation, when network connection
+ * between the servers in a cluster is lost, and the servers
+ * continue to function forming independent clusters.
+ */
+public class SplitBrainClusterEvent extends ClusterEvent {}
+```
+- Don't do this:
+```java
+package com.company.product.api;
+public class SplitEvent extends ClusterEvent {} //What is a SplitEvent?
+
+package com.company.product.api;
+public class SbcEvent extends ClusterEvent {} //What is a SbcEvent?
+```
+#### 2.2.7、抽象类以Abstract开头 
+
+### 2.3、Classes
+#### 2.3.1、public方法放在前面
+#### 2.3.2、无状态、get\set方法放在一起
+#### 2.3.3、尽量保持修改方法最少
+#### 2.3.4、提供默认的无参构造函数
+#### 2.3.5、重写equals、hashcode、toString方法，考虑实现Comparable、Serializable
+#### 2.3.6、考虑可重入和幂等性
+#### 2.3.7、考虑申明类为final
+#### 2.3.8、考虑单例防止多实例初始化
+#### 2.3.9、考虑使用指定类型保证参数合法
+#### 2.3.10、考虑设计immutable类
+- Rationale:Compare for example the Java String (immutable) and Date (mutable) classes.
+#### 2.3.11、避免static classes和Cloneable
+#### 2.3.12、不要给static class增加成员变量
+
+
+
+### 2.4. Interfaces
+#### 2.4.1. Do not add methods to a released public Java interface
+#### 2.4.2. Do not use marker interfaces
+#### 2.4.3. Do not use public interfaces as a container for constant fields
+
+### 2.5. Enumerations
+#### 2.5.1. Consider specifying a zero-value (“None” or “Unspecified”, etc) for enumeration types
+#### 2.5.2. Avoid enumeration types with only one value
+#### 2.5.3. 避免使用枚举表示不确定的类型
+#### 2.5.4. 不要为未来使用去预留value
+#### 2.5.5. 已发布的枚举里不要增加新的枚举实例
+
+
+
+## 3、Method Design Checklist
+### 3.1、General
+#### 3.1.1. 确保一个方法只干一件事
+#### 3.1.2. 确保相关的方法在同一个层级
+#### 3.1.3. 确保组合调用函数时不需要胶水代码
+#### 3.1.4. 保证方法的原子性
+#### 3.1.5. 限制修改方法的数量
+#### 3.1.6. 设计修改器时尽量保证不变性
+#### 3.1.7. 范型方法替代一系列的重载方法
+#### 3.1.8. 考虑使用lambda function
+#### 3.1.9. 考虑使用方法对，比如init和destroy
+#### 3.1.10. 避免使用方写loops
+#### 3.1.11. 修改函数里避免可选参数
+#### 3.1.12. 避免非幂等的函数
+#### 3.1.13. 功能性接口和lambda的组合取代继承
+- Rationale: 为了避免继承API造成客户端代码与API紧耦合，考虑使用静态接口方法实现组合。
+  对于任何给定的Java类，只能有一个超类。此外，在API中展示抽象或基类应该由客户端代码继承，这是一个非常大和有问题的API 功能。避免API继承，而考虑提供静态接口方法，采用一个或多个lambda参数，并将那些给定的lambdas应用到默认的内部API实现类。
+  这也创造了一个更清晰的关注点分离。例如，并非继承公共API类AbstractReader和覆盖抽象的空的handleError（IOException ioe），我们最好是在Reader接口中公开静态方法或构造器，接口使用Consumer <IOException>并将其应用于内部的通用ReaderImpl。
+
+
+- Do this:
+```java
+Reader reader = Reader.builder()
+    .withErrorHandler(IOException::printStackTrace)
+    .build();
+```
+- Don't do this:
+```java
+Reader reader = new AbstractReader() {
+    @Override
+    public void handleError(IOException ioe) {
+        ioe. printStackTrace();
+    }
+};
+```
+#### 3.1.14. 链式调用时每个函数一行，有助于定位问题
+
+
+### 3.2、Parameters
+#### 3.2.1. 接口代替具体的类作为参数和返回值
+#### 3.2.2. 在参数和返回值里使用集合代替数组
+- Rationale:如果返回的是一个不可修改的List就好得多，比如Stream，如果API返回元素集合，最好返回的是只读类型。
+- Do this:
+```java
+public Stream<String> comments() {
+ return Stream.of(comments);
+}
+```
+- Don't do this:
+```java
+public String[] comments() {
+ return comments; // Exposes the backing array!
+}
+```
+#### 3.2.3. 使用指定范型替代untyped的集合
+#### 3.2.4. 使用枚举取代boolean或者int类型
+#### 3.2.5. 单个参数放在集合和数组参数前面
+#### 3.2.6. 返回空结合替代null
+#### 3.2.7. 使用copy模式来保护可变参数被修改
+#### 3.2.8. 避免使用可变长度的参数
+#### 3.2.9. 参数个数不要超过3个
+#### 3.2.10. 相同类型的参数不要挨在一起
+#### 3.2.11. 避免overloading函数
+#### 3.2.12. 参数类型要避免透露实现细节
+#### 3.2.13. 避免返回null
+#### 3.2.14. 避免返回内部可变对象的引用
+#### 3.2.15. 不要预留参数为以后使用
+
+### 3.3. Error handling
+#### 3.3.1. 只在异常情况下使用exception
+#### 3.3.2. 只在可恢复的场景使用受检查异常
+#### 3.3.3. api使用错误时跑出自定义的RuntimeException
+#### 3.3.4. 在适当的层抛出异常
+#### 3.3.5. 确保错误调用没有副作用
+#### 3.3.6. 优先使用标准异常替代自定义异常。NullPointerException、IllegalArgumentException、IllegalStateException
+
+
